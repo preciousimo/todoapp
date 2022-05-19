@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from rest_framework import generics
+from rest_framework import generics, permissions
 from .serializers import TodoSerializer
 from todo.models import Todo
 
@@ -8,6 +8,7 @@ class TodoListCreate(generics.ListCreateAPIView):
     # ListAPIView requires two mandatory attributes, serializer_class and queryset.
     # We specify TodoSerializer which we have earlier implemented
     serializer_class = TodoSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
     def get_queryset(self):
         user = self.request.user
