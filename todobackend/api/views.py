@@ -20,3 +20,11 @@ class TodoListCreate(generics.ListCreateAPIView):
         serializer.save(user=self.request.user)
 
 
+class TodoRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = TodoSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        # usercan only update, delete own posts
+        return Todo.objects.filter(user=user)
