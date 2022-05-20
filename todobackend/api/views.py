@@ -1,4 +1,4 @@
-from django.shortcuts import render, HttpResponse
+from django.shortcuts import render
 from rest_framework import generics, permissions
 from .serializers import TodoSerializer, TodoToggleCompleteSerializer
 from todo.models import Todo
@@ -8,6 +8,7 @@ from rest_framework.parsers import JSONParser, ParseError
 from rest_framework.authtoken.models import Token
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import authenticate
 
 # Create your views here.
 class TodoListCreate(generics.ListCreateAPIView):
@@ -25,7 +26,6 @@ class TodoListCreate(generics.ListCreateAPIView):
         #serializer holds a django model
         serializer.save(user=self.request.user)
 
-
 class TodoRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
 
     serializer_class = TodoSerializer
@@ -35,7 +35,6 @@ class TodoRetrieveUpdateDestroy(generics.RetrieveUpdateDestroyAPIView):
         user = self.request.user
         # usercan only update, delete own posts
         return Todo.objects.filter(user=user)
-
 
 class TodoToggleComplete(generics.UpdateAPIView):
     serializer_class = TodoToggleCompleteSerializer
@@ -62,3 +61,17 @@ def signup(request):
 
         except IntegrityError:
             return JsonResponse({'error':'username taken, choose another username'}, status=400)
+
+@csrf_exempt
+def login(request):
+    if request.method == 'POST':
+        data = JSONParser().parse(request)
+        user = authenticate(request, username=data['username'], password=data['password'])
+        if user is None:
+            return JsonResponse({'error':'unable to login. Check username and password'}, status=400)
+        else: # return user token
+            try:
+                token = Token.objects.get(user=user)
+            except: # If token not in db, create a new one
+                token = Token.objects.create(user=user)
+            return JsonResponse({'token':str(token)}, status=201)
