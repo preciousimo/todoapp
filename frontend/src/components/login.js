@@ -13,6 +13,11 @@ const Login = props => {
         setUsername(username);
     }
 
+    const onChangePassword = e => {
+        const password = e.target.value;
+        setPassword(password);
+    }
+
     const login = () => {
         props.login({username: username, password:password});
         props.history.push('/');
