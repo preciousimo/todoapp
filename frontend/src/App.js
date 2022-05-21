@@ -3,14 +3,15 @@ import { Switch, Route, Link } from "react-router-dom";
 import "bootstrap/dist/css/bootstrap.min.css";
 
 import AddTodo from "./components/add-todo";
-import TodoList from "./components/todos-list";
+import TodosList from "./components/todos-list";
 import Login from "./components/login";
 import Signup from "./components/signup";
 
 import Nav from "react-bootstrap/Nav";
 import Navbar from "react-bootstrap/Navbar";
 import Container from 'react-bootstrap/Navbar';
-import TodosList from "./components/todos-list";
+
+import TodoDataService from './services/todos';
 
 function App() {
   const [user, setUser] = React.useState(null);
@@ -18,7 +19,18 @@ function App() {
   const [error, setError] = React.useState('');
 
   async function login(user = null){ // default user to null
-    setUser(user);
+    TodoDataService.login(user).then(response => {
+      setToken(response.data.token);
+      setUser(user.username);
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', user.username);
+      setError('');
+    })
+    .catch( e =>{
+      console.log('login',e);
+      setError(e.toString());
+    });
+    // setUser(user);
   }
 
   async function logout(){
